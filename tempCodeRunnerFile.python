@@ -1,0 +1,49 @@
+
+#! importing libraries
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn import svm
+from sklearn.metrics import accuracy_score
+
+
+#! importing geocoder library
+from geopy.geocoders import Nominatim
+from pprint import pprint
+
+#! Initialising Geocoder
+app = Nominatim(user_agent="dishantsApp")
+
+
+#!import the csv files
+crimeDataset = pd.read_csv('../CrimeDataset.csv')
+crimeDataset.tail()
+crimeDataset.shape
+crimeDataset.describe()
+
+#! Cleaning the data
+crimeDataset.isnull().sum()
+
+#? replacing all the - with NA
+CleanedCrimeDataset = crimeDataset.replace('-','NA')
+CleanedCrimeDataset.head()
+
+# crimeDataset.to_csv('CrimeDataset.csv',index=False)
+
+#! geoencoding locations
+
+for i in CleanedCrimeDataset['crime Location']:
+    # print(i)
+    coordinates = app.geocode(i)
+    if coordinates != None:
+        final_cord = coordinates.raw['lat']+","+coordinates.raw['lon']
+        CleanedCrimeDataset['crime Location'] = CleanedCrimeDataset['crime Location'].replace(i,final_cord)
+    # print(coordinates['lat'])
+CleanedCrimeDataset.head()
+MinimalDataset = CleanedCrimeDataset.drop(columns=['Date of Offend','Off.Name','Off.age','Off.gender','Name of victim','Victim Gender','Victim Age','Link / source'])
+print(MinimalDataset['Type of crime'].value_counts())
+MinimalDataset.head()
+
+
+#! performing clustering
